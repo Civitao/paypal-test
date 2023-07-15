@@ -38,7 +38,7 @@ export function Checkout() {
           pictureUrl={item.pictureUrl}
           deleteButton={() => deleteCartItem(item.id)}
           quantity={(item.quantity ? item.quantity : 1)}  
-          price={(item.price / 100).toFixed(2)}
+          price={Number((item.price / 100).toFixed(2))}
         />
         )) : 
           <p className='text-black font-semibold text-center pt-32'>There no items yet</p>

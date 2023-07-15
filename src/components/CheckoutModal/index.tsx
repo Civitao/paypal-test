@@ -129,7 +129,8 @@ return (
     //     });
     // }}
       />    
-  
+            <button className='w-full h-12 mt-3 font-semibold rounded-lg hover:bg-zinc-800 ease-out transition bg-blue-600'>Via PayPal API</button>
+
         </div>
         {/* <Dialog.Close asChild>
             <button className="w-12 h-12 bg-green-400">Save changes</button>
