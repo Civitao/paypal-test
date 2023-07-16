@@ -72,7 +72,7 @@ export function Checkout() {
         </div>
         </div>
         </div>
-        <CheckoutModal orderValue={convertTotalToPaypalTotal(total)} open />
+        <CheckoutModal isCheckoutButtonDisabled={cartItems.length >= 1 ? false : true}  orderValue={convertTotalToPaypalTotal(total)} open />
 
         
       </div>

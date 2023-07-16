@@ -1,41 +1,121 @@
+import axios from 'axios';
+import { v4 as uuidv4 } from 'uuid';
+import { baseUrl } from '../utils/api';
+import { randomUUID } from 'crypto';
+const [clientId, secretKey] = [
+  process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID, 
+  process.env.NEXT_PUBLIC_PAYPAL_SECRET_KEY!
+]
+
+export async function createPaypalToken() {
+    const response = await fetch(baseUrl + "/v1/oauth2/token", {
+      method: "post",
+      body: "grant_type=client_credentials",
+      headers: {
+        Authorization: 
+        "Basic " + Buffer.from(clientId + ":" + secretKey).toString("base64"),   
+      }
+    });
+    const data = await response.json()
+    return data.access_token;
+
+}   
+
+  
+
+export async function createOrder() {
+
+  const accessToken = await createPaypalToken();
+  
+  const response = await axios({
+    url: baseUrl + "/v2/checkout/orders",
+    method: "post",
+    headers: {
+      "Authorization": `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+  
+    data: {
+      intent: "CAPTURE",
+      purchase_units: [
+        { 
+          items: [
+          {
+              name: "T-Shirt",
+              description: "Green XL",
+              quantity: "1",
+              unit_amount: {
+                  currency_code: "USD",
+                  value: "100.00"
+              }
+          }
+      ],
+          amount: {
+            currency_code: "USD",
+            value: "100.00",
+            breakdown: {
+              item_total: {
+                  currency_code: "USD",
+                  value: "100.00"
+              }
+          }
+          }
+        },
+        
+      ],
+      application_context: {
+        return_url: "https://example.com/return",
+        cancel_url: "https://example.com/cancel"
+    },
+    }
+  });
+
+  const data = response.data;
+  console.log(data);
+  return data;
+
+}
+
 export async function createPaypalOrder() {
+  let order = await createOrder();
+  const response = authorizeOrderPayment(order.id)
+  console.log(response);
 
-  fetch('https://api-m.sandbox.paypal.com/v2/checkout/orders', {
-      method: 'POST',
-      headers: {
-          'Content-Type': 'application/json',
-          'PayPal-Request-Id': '7b92603e-77ed-4896-8e78-5dea2050476a',
-          'Authorization': 'Bearer 6V7rbVwmlM1gFZKW_8QtzWXqpcwQ6T5vhEGYNJDAAdn3paCgRpdeMdVYmWzgbKSsECednupJ3Zx5Xd-g'
-      },
-      body: JSON.stringify({ "intent": "CAPTURE", "purchase_units": [ { "reference_id": "d9f80740-38f0-11e8-b467-0ed5f89f718b", "amount": { "currency_code": "USD", "value": "100.00" } } ], "payment_source": { "paypal": { "experience_context": { "payment_method_preference": "IMMEDIATE_PAYMENT_REQUIRED", "payment_method_selected": "PAYPAL", "brand_name": "EXAMPLE INC", "locale": "en-US", "landing_page": "LOGIN", "shipping_preference": "SET_PROVIDED_ADDRESS", "user_action": "PAY_NOW", "return_url": "https://example.com/returnUrl", "cancel_url": "https://example.com/cancelUrl" } } } })
-  });
-
+  return response;
 }
 
-export async function updatePaypalOrder() {
-
-  fetch('https://api-m.sandbox.paypal.com/v2/checkout/orders/5O190127TN364715T', {
-      method: 'PATCH',
-      headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer access_token6V7rbVwmlM1gFZKW_8QtzWXqpcwQ6T5vhEGYNJDAAdn3paCgRpdeMdVYmWzgbKSsECednupJ3Zx5Xd-g'
-      },
-      body: JSON.stringify([ { "op": "replace", "path": "/purchase_units/@reference_id==PUHF/shipping/address", "value": { "address_line_1": "2211 N First Street", "address_line_2": "Building 17", "admin_area_2": "San Jose", "admin_area_1": "CA", "postal_code": "95131", "country_code": "US" } } ])
+export async function capturePayment(orderId: string) {
+  const accessToken = await createPaypalToken();
+  const response = await axios({
+    url: baseUrl + `/v2/checkout/orders/${orderId}/capture`,
+    method: "post",
+    headers: {
+      "Authorization": `Bearer ${accessToken}`,
+      "PayPal-Request-Id": uuidv4(),
+    },
   });
 
-}
 
-export async function authorizeOrderPayment() {
+  console.log(response);
+  return response;
+  }
 
-const authorize = await fetch('https://api-m.sandbox.paypal.com/v2/checkout/orders/5O190127TN364715T/authorize', {
+
+
+export async function authorizeOrderPayment(orderId: string) {
+  const accessToken = await createPaypalToken();
+
+const authorize = await fetch(`https://api-m.sandbox.paypal.com/v2/checkout/orders/${orderId}/authorize`, {
     method: 'POST',
     headers: {
-        'PayPal-Request-Id': '7b92603e-77ed-4896-8e78-5dea2050476a',
-        'Authorization': 'Bearer access_token6V7rbVwmlM1gFZKW_8QtzWXqpcwQ6T5vhEGYNJDAAdn3paCgRpdeMdVYmWzgbKSsECednupJ3Zx5Xd-g'
+        'PayPal-Request-Id': uuidv4(),
+        'Authorization': `Bearer ${accessToken}`
     }
 });
 const response = await authorize.json()
 console.log(response);
+alert(response.message);
+return response
 
 
 

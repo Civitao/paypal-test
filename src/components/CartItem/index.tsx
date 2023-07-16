@@ -37,7 +37,7 @@ export function CartItem (props: CartItemProps) {
 
       </div>
       <p className='justify-center  text-xs font-medium'>${props.price}</p>
-      <button onClick={props.deleteButton} className='w-16 h-5 p-2 text-center absolute top-16 right-0 text-xs font-semibold items-center justify-center flex text-white rounded-md hover:bg-zinc-800 ease-out transition bg-black'>Remove</button>
+      <button onClick={props.deleteButton} className='w-16 h-5 p-3 text-center tracking-tighter absolute top-16 right-0 text-xs font-semibold items-center justify-center flex text-white rounded-md hover:bg-zinc-800 ease-out transition bg-black'>Remove</button>
     </div>
     );
 }

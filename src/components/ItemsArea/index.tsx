@@ -55,7 +55,7 @@ export function ItemsArea () {
     );
   };
 
-   const { cartItems, increaseCartItemQuantity, decreaseCartItemQuantity , addItemToCart } = useCart();
+   const { addItemToCart } = useCart();
 
   return ( 
     <div className='w-[52%] h-[48%] absolute flex flex-row left-60 rounded-2xl bg-white'>
